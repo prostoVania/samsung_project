@@ -1,5 +1,6 @@
 Main idea to separate 2 types of users: Bot and Human. Was made huge brainstorm on feature engeneering(especially
 when we decided to understand who use our app - Human1 or Human2). 
+
 Main modules:
   - Numpy
   - Scipy
