@@ -1,15 +1,10 @@
-from Samsung_practice.log_parser import log_merger
+from Samsung_practice.tmp.LogParser import log_merger
 import pandas as pd
 import numpy as np
 
-FEATURES = ['apm', 'aht', 'exp', 'gold', 'items_per_click', 'touch_swipe', 'way_compliteness'] # for bot vs. human
-FEATURES_HH = []
 
+FEATURES = ['apm', 'aht', 'exp', 'gold', 'items_per_click', 'touch_swipe', 'way_compliteness']  # for bot vs. human
 
-def _index(data, index):
-    for i, row in data.iterrows():
-        if i > index and row['Event'] == ' Touch':
-            return (row['X-coord'], row['Y-coord'], row['Time'])
 
 # Main idea, that our bot always try to reach location on which we tapped, when human-player can change
 # his direction before getting to location.
@@ -17,21 +12,24 @@ def _index(data, index):
 def way_compl(data):
     # We will calculate number of complete ways / all touches
     # Complete way: (distance / v) <= time
-    V = 0.3
+    def _index(data, index):
+        for i, row in data.iterrows():
+            if i > index and row['Event'] == ' Touch':
+                return row['X-coord'], row['Y-coord'], row['Time']
+    v = 0.3
     comp = 0
     touches = 0
     for index, row in data.iterrows():
         if index < len(data)-1:
             if row['Event'] == ' Touch':
                 last = (row['X-coord'], row['Y-coord'], row['Time'])
-                next = _index(data, index)
-                if next == None:
+                curr = _index(data, index)
+                if curr is None:
                     touches += 1
                 else:
-                    distance = np.sqrt((last[0] - next[0])**2 + (last[1] - next[1])**2)
-                    time = next[2] - last[2]
-                    tmp = distance / V
-                    if distance / V <= time:
+                    distance = np.sqrt((last[0] - curr[0])**2 + (last[1] - curr[1])**2)
+                    time = curr[2] - last[2]
+                    if distance / v <= time:
                         comp += 1
                     touches += 1
     return np.abs(comp - touches)
@@ -77,7 +75,7 @@ def touch_swipe(data):
     return touches - swipes
 
 
-def itemsPerClick(data):
+def items_per_click(data):
     counter = 0         # to calculate number of touches
     for index, row in data.iterrows():
         if row['Event'] == 'Touch':
@@ -111,59 +109,76 @@ def aht(data):
     return averageDuration
 
 
-def f_calc(data: pd.DataFrame, features: list, period = 10):
-    # print(data.head())
-    temp = period * 1000
-    res = []
-    end_time = temp
-    start_time = 0
-    while end_time <= data.at[len(data)-2,'Time']:
-        data_part = data.loc[(start_time <= data['Time']) & (end_time >= data['Time'])]
-        # print(data_part.head())
-        start_time += temp
-        end_time += temp
-        if len(data_part) == 0:
-            continue
-        tmp = {}
-        for feature in features:
-            tmp[feature.__name__] = feature(data_part)
-        res.append(tmp)
-        #print(len(res))
-    return res
+Lg = log_merger.Log_merger
+class Feature_calculator(Lg):
+    """
+    Use extracted data, separate it on periods and calculate results of
+    features on it. Will be interpreted as structured data for future
+    'learning' classifiers
+    """
+
+    def f_calc(self,data: pd.DataFrame, features: list, period = 10):
+        """
+        Separate data on small periods and gives vector of feature results on this period
+        :param data: expecting data from Log_merger
+        :param features: any number of features, you want
+        :param period: set up for 10 sec period
+        :return: list of feature results
+        """
+        # print(data.head())
+        temp = period * 1000
+        res = []
+        end_time = temp
+        start_time = 0
+        while end_time <= data.at[len(data)-2,'Time']:
+            data_part = data.loc[(start_time <= data['Time']) & (end_time >= data['Time'])]
+            # print(data_part.head())
+            start_time += temp
+            end_time += temp
+            if len(data_part) == 0:
+                continue
+            tmp = {}
+            for feature in features:
+                tmp[feature.__name__] = feature(data_part)
+            res.append(tmp)
+        return res
 
 
-def get_data(data_paths):
-    # res_data = []
-    # for data_path in data_paths:
-    #     print(data_path)
-    data = log_merger.process_file(data_paths[0],data_paths[1])
-    res_data = f_calc(data,[apm, aht, exp, gold, itemsPerClick, touch_swipe, way_compl])
-    return res_data
+    def get_data(self,data_paths):
+        """
+        Extract data from data sets directory and gives matrix of feature results vectors
+        :param data_paths: path to directory with your data sets
+        """
+        data = self.process_file(data_paths[0],data_paths[1])
+        res_data = self.f_calc(data,[apm, aht, exp, gold, items_per_click, touch_swipe, way_compl])
+        return res_data
 
 
-def get_data_plot(data_paths):
-    res = []
-    for data_path in data_paths:
-        data = log_merger.process_file(data_path[0], data_path[1])
-        res += f_calc(data, [apm, aht, exp, gold, itemsPerClick, touch_swipe, way_compl])
-    return res
-
-def get_data_for_classifier(data_path, player):
-    '''
-
-    :param data_path: (log_game,log_touch)
-    :param player: 0 for bot, 1 for player
-    :return:
-    '''
-    feat_data = get_data(data_path)
-    final_data = []
-    final_data_player = []
-    for i in feat_data:
-        final_data.append(list(i.values()))
-        final_data_player.append(player)
-    return final_data, final_data_player
+    def get_data_plot(self,data_paths):
+        """
+        Same as get_data, but for future visualisation
+        """
+        res = []
+        for data_path in data_paths:
+            data = self.process_file(data_path[0], data_path[1])
+            res += self.f_calc(data, [apm, aht, exp, gold, items_per_click, touch_swipe, way_compl])
+        return res
 
 
+    def get_data_for_classifier(self,data_path, player):
+        '''
+        Modified get_data:
+        for each vector in feature results matrix it adds - 1 or 0
+        0 - Player 1 (Expected bot)
+        1 - Player 2 (Expected human)
+        '''
+        feat_data = self.get_data(data_path)
+        final_data = []
+        final_data_player = []
+        for i in feat_data:
+            final_data.append(list(i.values()))
+            final_data_player.append(player)
+        return final_data, final_data_player
 
 
 # if __name__ == '__main__':

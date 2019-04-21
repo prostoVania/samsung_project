@@ -1,4 +1,4 @@
-from Samsung_practice.log_parser.feature_calc import get_data_for_classifier
+from Samsung_practice.tmp.LogParser import feature_calc
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, roc_curve, classification_report
@@ -16,7 +16,7 @@ import pickle
 METHODS = [('DecisionTree',DecisionTreeClassifier), ('LogReg',LogisticRegression), ('kNN',KNeighborsClassifier),
            ('RandomForest',RandomForestClassifier), ('NaiveBayes', naive_bayes.GaussianNB)]
 
-DIRECTORY = '/Users/zoran/desktop/Data sets' # CHANGE
+DIRECTORY = '/Users/zoran/Desktop/Programming/Samsung_practice/tmp/Datasets/Data sets' # CHANGE to 'Datasets/Data sets'
 
 
 def test(name):
@@ -45,6 +45,9 @@ def catalog_reader(directory):
     #     print(i)
     return human_path, bot_path
 
+
+# Saving executed data for faster work
+
 # paths = catalog_reader(DIRECTORY)
 # x_training, x_test, y_training, y_test = data_class(paths[0],paths[1])
 # with open ('tmp.pickle', 'rb') as file:
@@ -57,13 +60,16 @@ def roc_helper(y_predicted):
     return np.array([y_predicted[i] == 1 for i in range(len(y_predicted))])
 
 roc_stats = {}
+f_calc = feature_calc.Feature_calculator()
+get_data_for_classifier = f_calc.get_data_for_classifier
+
 
 def classifier(human_paths: list, bot_paths: list, boost):
     '''
 
     :param human_paths:
     :param bot_paths:
-    :param boost: None, AdaBoost, GradientBoost,
+    :param boost: None, AdaBoost, GradientBoost, BaggingClassifier
     :return:
     '''
     x_human = []
@@ -94,7 +100,7 @@ def classifier(human_paths: list, bot_paths: list, boost):
             cm = confusion_matrix(y_test, y_predicted)
             x, y, _ = roc_curve(y_test, roc_helper(y_predicted), pos_label=1)
             roc_stats[name] = (x, y)
-            print(clf.score(x_test,y_test))
+            print('Accuracy - {}'.format(clf.score(x_test, y_test)))
             print('{} confusion matrix:\n'.format(name), cm)
             print(classification_report(y_test, y_predicted))
 
@@ -112,7 +118,7 @@ def classifier(human_paths: list, bot_paths: list, boost):
                 cm = confusion_matrix(y_test, y_predicted)
                 x, y, _ = roc_curve(y_test, roc_helper(y_predicted), pos_label=1)
                 roc_stats['AdaBoost' + name] = (x, y)
-                print(clf.score(x_test, y_test))
+                print('Accuracy - {}'.format(clf.score(x_test, y_test)))
                 print('{}(alg - {}) confusion matrix:\n'.format(name, alg), cm)
                 print(classification_report(y_test, y_predicted))
 
@@ -125,7 +131,7 @@ def classifier(human_paths: list, bot_paths: list, boost):
         cm = confusion_matrix(y_test, y_predicted)
         x, y, _ = roc_curve(y_test, roc_helper(y_predicted), pos_label=1)
         roc_stats['GradientBoost'] = (x, y)
-        print(clf.score(x_test, y_test))
+        print('Accuracy - {}'.format(clf.score(x_test, y_test)))
         print('{} confusion matrix:\n'.format(boost), cm)
         print(classification_report(y_test, y_predicted))
 
@@ -138,8 +144,8 @@ def classifier(human_paths: list, bot_paths: list, boost):
             cm = confusion_matrix(y_test, y_predicted)
             x, y, _ = roc_curve(y_test, roc_helper(y_predicted), pos_label=1)
             roc_stats['Bagging' + name] = (x, y)
-            print(clf.score(x_test, y_test))
-            print('{} confusion matrix:\n'.format(name), cm)
+            print('Accuracy - {}'.format(clf.score(x_test, y_test)))
+            print('Bagging Classifier ({}) confusion matrix:\n'.format(name), cm)
             print(classification_report(y_test, y_predicted))
 
 
