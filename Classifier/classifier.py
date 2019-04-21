@@ -1,4 +1,4 @@
-from Samsung_practice.tmp.LogParser import feature_calc
+from samsung_project.LogParser import feature_calc
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, roc_curve, classification_report

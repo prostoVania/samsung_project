@@ -1,5 +1,5 @@
-from Samsung_practice.tmp.LogParser import feature_calc
-from Samsung_practice.tmp.Classifier.classifier import catalog_reader
+from samsung_project.LogParser import feature_calc
+from samsung_project.Classifier.classifier import catalog_reader
 import matplotlib.pyplot as plt
 import numpy as np
 import umap

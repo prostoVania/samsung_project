@@ -1,4 +1,4 @@
-from Samsung_practice.tmp.LogParser import log_merger
+from samsung_project.LogParser import log_merger
 import pandas as pd
 import numpy as np
 
