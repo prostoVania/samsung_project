@@ -7,7 +7,7 @@ import umap
 
 reducer = umap.UMAP()
 FEATURES = {'apm':0, 'aht':1, 'exp':2, 'gold':3, 'itemsPerClick':4, 'touch_swipe':5, 'way_compliteness':6}
-DIRECTORY = '/Users/zoran/Desktop/Programming/Samsung_practice/tmp/Datasets/Data sets' # CHANGE to 'Datasets/Data sets'
+DIRECTORY = 'samsung_project/Datasets/Data sets'
 
 
 def _prep(features, data):

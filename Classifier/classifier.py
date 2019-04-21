@@ -16,7 +16,7 @@ import pickle
 METHODS = [('DecisionTree',DecisionTreeClassifier), ('LogReg',LogisticRegression), ('kNN',KNeighborsClassifier),
            ('RandomForest',RandomForestClassifier), ('NaiveBayes', naive_bayes.GaussianNB)]
 
-DIRECTORY = '/Users/zoran/Desktop/Programming/Samsung_practice/tmp/Datasets/Data sets' # CHANGE to 'Datasets/Data sets'
+DIRECTORY = 'samsung_project/Datasets/Data sets'
 
 
 def test(name):
