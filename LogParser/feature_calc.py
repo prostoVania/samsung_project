@@ -180,12 +180,3 @@ class Feature_calculator(Lg):
             final_data_player.append(player)
         return final_data, final_data_player
 
-
-# if __name__ == '__main__':
-#     bot_Path = ['gamelog_Game_2019-01-31_10-59-48.csv', 'gamelog_Touch_2019-01-31_10-59-48.csv']
-#     human_Path = ['gamelog_Game_2019-01-31_11-47-31.csv', 'gamelog_Touch_2019-01-31_11-47-31.csv']
-#
-#     feat_h = get_data(bot_Path)
-#     feat_b = get_data(human_Path)
-#
-#     clas_data = get_data_for_classifier(human_Path,1)
